@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-기본 테스트 케이스들
+기본 테스트 케이스
 Hippocampal Signal Processing Project
 """
 
