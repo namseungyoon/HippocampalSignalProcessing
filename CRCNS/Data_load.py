@@ -334,6 +334,26 @@ if __name__ == "__main__":
     print("현재 실험명 : ", session_data['session_name'])
     print("Session Keys : ", session_data.keys())
 
+    # session_data는 이미 load_session 등으로 불러온 상태라고 가정
+    session_name = session_data['session_name']
+    xml_path = f"{session_name}/{session_name}.xml"
+
+    # XML 파일 열기
+    root = load_xml(xml_path)
+
+    # spike 샘플링 주파수 찾기
+    sampling_rate = None
+    for acq in root.iter('acquisitionSystem'):
+        for child in acq:
+            if child.tag == 'samplingRate':
+                sampling_rate = float(child.text)
+                break
+
+    if sampling_rate is not None:
+        print(f"Spike sampling rate for {session_name}: {sampling_rate} Hz")
+    else:
+        print("Sampling rate not found in XML.")
+    
     eeg = session_data["eeg"]
     
     print("LFP샘플수 : ", eeg.shape[0])   # 샘플수
@@ -341,16 +361,58 @@ if __name__ == "__main__":
     sampling_rate = 1250  # Hz
     n_samples = eeg.shape[0]
 
+    # 원하는 시간 범위 (초)
+    start_time = 0
+    end_time = 60
+
     # 타임 인덱스 (초 단위)
     time_index = np.arange(n_samples) / sampling_rate
     print(time_index[:10])
 
-    # --- 그래프 시각화 ---
-    plt.figure(figsize=(12, 4))
-    plt.plot(time_index[:1000], eeg[:1000, 0], label='Channel 0')
-    plt.xlabel('time')
-    plt.ylabel('Amplitude')
-    plt.title([session_data['session_name'], 'LFP'])
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    # spk, res 데이터 준비
+    if "spk" in session_data and 1 in session_data["spk"] and "res" in session_data and 1 in session_data["res"]:
+        spk = session_data["spk"][1]  # tetrode 1번
+        res = session_data["res"][1]  # tetrode 1번
+        n_spk_samples = spk.shape[1]
+        spk_time_index = np.arange(n_spk_samples) / sampling_rate  # spike 파형 시간축
+
+        # --- 시간 범위 마스킹 ---
+        # LFP: 시간 인덱스 범위 추출
+        lfp_mask = (time_index >= start_time) & (time_index <= end_time)
+        lfp_time = time_index[lfp_mask]
+        lfp_data = eeg[lfp_mask, 0]
+
+        # res: 해당 구간에 속하는 스파이크만 추출
+        spike_times_sec = res / sampling_rate
+        spike_mask = (spike_times_sec >= start_time) & (spike_times_sec <= end_time)
+        spike_times_in_range = spike_times_sec[spike_mask]
+
+        plt.figure(figsize=(12, 8))
+
+        # 1. LFP
+        plt.subplot(3, 1, 1)
+        plt.plot(lfp_time, lfp_data, label='Channel 0', color='b', linewidth=0.25)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Amplitude')
+        plt.title(f"{session_data['session_name']} LFP ({start_time}s ~ {end_time}s)")
+        plt.legend()
+
+        # 2. Spike waveform (첫 번째 파형)
+        plt.subplot(3, 1, 2)
+        plt.plot(spk_time_index, spk[0], label='spk[0] (tetrode 1)', color='r', linewidth=0.25)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Amplitude')
+        plt.title(f"{session_data['session_name']} First Spike Waveform (tetrode 1)")
+        plt.legend()
+
+        # 3. Spike raster (스파이크 발생 시점 세로줄)
+        plt.subplot(3, 1, 3)
+        plt.eventplot(spike_times_in_range, orientation='horizontal', colors='g', linewidths=0.25)
+        plt.xlabel('Time (s)')
+        plt.yticks([])
+        plt.title(f"{session_data['session_name']} Spike Times ({start_time}s ~ {end_time}s)")
+
+        plt.tight_layout()
+        plt.show()
+
+
