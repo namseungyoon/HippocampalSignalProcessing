@@ -102,7 +102,7 @@ if __name__ == "__main__":
     bf_lfp = bandpass_filter(lfp[:,0])
     time_index = np.arange(lfp.shape[0]) / fs
     start_time_index = 4000 * fs
-    end_time_index = 6000 * fs
+    end_time_index = 4500 * fs
 
     cutoff = 300
     order = 4
