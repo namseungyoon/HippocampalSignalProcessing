@@ -101,8 +101,8 @@ if __name__ == "__main__":
     nf_lfp = notch_filter(lfp[:,0])
     bf_lfp = bandpass_filter(lfp[:,0])
     time_index = np.arange(lfp.shape[0]) / fs
-    start_time_index = 4000 * fs
-    end_time_index = 4500 * fs
+    start_time_index = 2000 * fs
+    end_time_index = 2001 * fs
 
     cutoff = 300
     order = 4
@@ -117,30 +117,30 @@ if __name__ == "__main__":
     # 1. 원본 LFP
     plt.subplot(4, 1, 1)
     plt.plot(time_index[start_time_index:end_time_index], lfp[start_time_index:end_time_index,0], color='gray', linewidth=0.5)
-    plt.plot(time_index[start_time_index:end_time_index], low_lfp[start_time_index:end_time_index], color='green', linewidth=0.7)
+    # plt.plot(time_index[start_time_index:end_time_index], low_lfp[start_time_index:end_time_index], color='green', linewidth=0.7)
 
-    plt.xlabel('Time (s)')
+    # plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
     plt.title('원본 LFP')
 
     # 2. 노치 필터 LFP
     plt.subplot(4, 1, 2)
     plt.plot(time_index[start_time_index:end_time_index], nf_lfp[start_time_index:end_time_index], color='red', linewidth=0.7)
-    plt.xlabel('Time (s)')
+    # plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
     plt.title('노치 필터 LFP')
 
     # 3. 밴드패스 필터 LFP
     plt.subplot(4, 1, 3)
     plt.plot(time_index[start_time_index:end_time_index], bf_lfp[start_time_index:end_time_index], color='blue', linewidth=0.7)
-    plt.xlabel('Time (s)')
+    # plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
-    plt.title('밴드패스 필터 LFP')
+    plt.title('밴드패스 필터 LFP (4-12Hz) Theta 리듬 영역')
 
     # 4. 로우패스 필터 LFP (300Hz)
     plt.subplot(4, 1, 4)
     plt.plot(time_index[start_time_index:end_time_index], low_lfp[start_time_index:end_time_index], color='green', linewidth=0.7)
-    plt.xlabel('Time (s)')
+    # plt.xlabel('Time (s)')
     plt.ylabel('Amplitude')
     plt.title('로우패스 필터 LFP (300Hz)')
 
